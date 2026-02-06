@@ -6,21 +6,25 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/fix-html-modules.js",
     "prod": "vite preview",
     "upload": "npm run build && upload-wa-map",
-    "upload-only": "upload-wa-map"
+    "upload-only": "upload-wa-map",
+    "trigger-incident": "npx tsx scripts/incident-manager.ts trigger",
+    "resolve-incident": "npx tsx scripts/incident-manager.ts resolve"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@workadventure/iframe-api-typings": "^1.26.10",
     "@workadventure/upload-maps": "^1.7.4",
     "dotenv": "^16.3.1",
+    "tsx": "^4.7.1",
     "typescript": "^5.9.2",
     "vite": "^7.0.0",
     "wa-map-optimizer-vite": "^1.2.1"
   },
   "dependencies": {
+    "@workadventure/room-api-client": "file:../workadventure/libs/room-api-clients/room-api-client-js",
     "@workadventure/scripting-api-extra": "^1.9.10"
   }
 }
