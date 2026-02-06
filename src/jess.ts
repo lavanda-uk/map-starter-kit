@@ -6,6 +6,7 @@ console.log("Script started successfully");
 
 let currentPopup: any = undefined;
 let incidentPopup: any = undefined;
+let incidentSound: any = undefined;
 
 // Waiting for the API to be ready
 WA.onInit()
@@ -64,6 +65,10 @@ WA.onInit()
     WA.room.area.onEnter("triggerIncident").subscribe(async () => {
       console.log("🚨 [triggerIncident] Entering triggerIncident area - triggering incident");
       try {
+        // Check current value before setting
+        const currentValue = WA.state.loadVariable("incidentTriggered");
+        console.log("🚨 [triggerIncident] Current incidentTriggered value:", currentValue);
+        
         // Set the incidentTriggered variable to true
         await WA.state.saveVariable("incidentTriggered", true);
         console.log("✅ [triggerIncident] Variable 'incidentTriggered' set to true");
@@ -72,6 +77,10 @@ WA.onInit()
         const incidentUrl = "https://app.spike.sh/incidents/argo-12";
         WA.event.broadcast("incident-triggered", { incidentUrl });
         console.log("✅ [triggerIncident] Event 'incident-triggered' broadcasted");
+        
+        // Trigger animation directly (in case variable was already true and change listener doesn't fire)
+        console.log("🚨 [triggerIncident] Triggering animation directly from area handler");
+        triggerIncidentAnimation();
         
         // Show confirmation to the user
         WA.ui.openPopup("incidentTriggered", "🚨 Incident triggered!", [
@@ -98,16 +107,7 @@ WA.onInit()
         // Broadcast the incident-resolved event
         WA.event.broadcast("incident-resolved", { message: "Incident has been resolved" });
         console.log("✅ [resolveIncident] Event 'incident-resolved' broadcasted");
-        
-        // Show confirmation to the user
-        WA.ui.openPopup("incidentResolved", "✅ Incident resolved!", [
-          {
-            label: "OK",
-            callback: (popup) => {
-              popup.close();
-            },
-          },
-        ]);
+        // Note: The popup will be shown by the event listener to all players
       } catch (error) {
         console.error("❌ [resolveIncident] Error resolving incident:", error);
       }
@@ -212,56 +212,124 @@ function setupIncidentManagement() {
   });
 
   // Listen for incidentTriggered variable changes
+  console.log("🔔 [Incident] Setting up variable change listener for 'incidentTriggered'");
   WA.state.onVariableChange("incidentTriggered").subscribe((value) => {
-    console.log("🔔 [Incident] incidentTriggered variable changed:", value);
+    console.log("🔔 [Incident] incidentTriggered variable changed to:", value, "(type:", typeof value, ")");
     
     const isTriggered = value === true;
+    console.log("🔔 [Incident] isTriggered:", isTriggered);
     
     if (isTriggered) {
-      console.log("🚨 [Incident] Triggering incident animation");
+      console.log("🚨 [Incident] Variable is true - triggering incident animation");
       triggerIncidentAnimation();
     } else {
-      console.log("✅ [Incident] Stopping incident animation");
+      console.log("✅ [Incident] Variable is false - stopping incident animation");
       stopIncidentAnimation();
     }
   });
+  console.log("🔔 [Incident] Variable change listener registered");
 
-  // Check initial state
+  // Check initial state (but don't play sound on load - only on actual triggers)
   const initialValue = WA.state.loadVariable("incidentTriggered");
   if (initialValue === true) {
-    console.log("🚨 [Incident] Incident is already triggered on load");
-    triggerIncidentAnimation();
+    console.log("🚨 [Incident] Incident is already triggered on load (variable is true)");
+    console.log("🚨 [Incident] Note: Sound will not play automatically on page load");
+    // Don't trigger animation on load - only trigger when variable changes or event is received
+    // This prevents sound from playing when page loads with an existing incident state
   }
 }
 
 function triggerIncidentAnimation() {
-  // Try to find and show an "incident" layer if it exists
-  // This is a simple animation - you can customize this based on your map structure
   try {
-    console.log("🚨 [Incident] Animation triggered - you can customize this based on your map");
+    console.log("🚨 [Incident] Triggering incident animation with sound");
     
-    // Example: You could toggle layer visibility if you have an "incident" layer
-    // WA.room.showLayer("incident");
+    // Load and play the incident sound
+    try {
+      console.log("🔊 [Incident] Loading sound: ./isengard.mp3");
+      incidentSound = WA.sound.loadSound("./isengard.mp3");
+      console.log("🔊 [Incident] Sound loaded successfully, sound object:", incidentSound);
+      
+      console.log("🔊 [Incident] Attempting to play sound with config: { volume: 0.5, loop: false }");
+      incidentSound.play({
+        volume: 0.5,
+        loop: false,  // Play once
+        rate: 1,
+        detune: 0,
+        delay: 0,
+        seek: 0,
+        mute: false
+      });
+      console.log("🔊 [Incident] Sound 'isengard.mp3' play() called successfully");
+    } catch (soundError) {
+      console.error("❌ [Incident] Error loading/playing sound:", soundError);
+      console.error("❌ [Incident] Sound error details:", {
+        message: soundError instanceof Error ? soundError.message : String(soundError),
+        stack: soundError instanceof Error ? soundError.stack : undefined
+      });
+    }
     
-    // Or trigger a sound effect if available
-    // WA.sound.playSound("incident-alert");
+    // Show the eye_of_sauron layer
+    try {
+      console.log("🎨 [Incident] Showing eye_of_sauron layer");
+      WA.room.showLayer("eye_of_sauron");
+      console.log("🎨 [Incident] Layer 'eye_of_sauron' shown successfully");
+    } catch (layerError) {
+      console.error("❌ [Incident] Error showing layer:", layerError);
+      console.error("❌ [Incident] Layer error details:", {
+        message: layerError instanceof Error ? layerError.message : String(layerError),
+        stack: layerError instanceof Error ? layerError.stack : undefined
+      });
+    }
   } catch (error) {
     console.error("❌ [Incident] Error triggering animation:", error);
+    console.error("❌ [Incident] Animation error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
   }
 }
 
 function stopIncidentAnimation() {
-  // Stop/reset the animation
   try {
-    console.log("✅ [Incident] Animation stopped - you can customize this based on your map");
+    console.log("✅ [Incident] Stopping incident animation");
     
-    // Example: Hide the incident layer
-    // WA.room.hideLayer("incident");
+    // Stop the sound if it's playing
+    if (incidentSound) {
+      console.log("🔇 [Incident] Sound object exists, attempting to stop");
+      try {
+        incidentSound.stop();
+        console.log("🔇 [Incident] Sound stop() called successfully");
+        incidentSound = undefined;
+        console.log("🔇 [Incident] Sound reference cleared");
+      } catch (soundError) {
+        console.error("❌ [Incident] Error stopping sound:", soundError);
+        console.error("❌ [Incident] Stop sound error details:", {
+          message: soundError instanceof Error ? soundError.message : String(soundError),
+          stack: soundError instanceof Error ? soundError.stack : undefined
+        });
+      }
+    } else {
+      console.log("🔇 [Incident] No sound object to stop (incidentSound is undefined)");
+    }
     
-    // Or stop sound effects
-    // WA.sound.stopSound("incident-alert");
+    // Hide the eye_of_sauron layer
+    try {
+      console.log("🎨 [Incident] Hiding eye_of_sauron layer");
+      WA.room.hideLayer("eye_of_sauron");
+      console.log("🎨 [Incident] Layer 'eye_of_sauron' hidden successfully");
+    } catch (layerError) {
+      console.error("❌ [Incident] Error hiding layer:", layerError);
+      console.error("❌ [Incident] Layer error details:", {
+        message: layerError instanceof Error ? layerError.message : String(layerError),
+        stack: layerError instanceof Error ? layerError.stack : undefined
+      });
+    }
   } catch (error) {
     console.error("❌ [Incident] Error stopping animation:", error);
+    console.error("❌ [Incident] Stop animation error details:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
   }
 }
 
