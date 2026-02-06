@@ -1593,19 +1593,106 @@
                          "name":"default",
                          "type":"bool",
                          "value":false
-                        },
+                        }, 
                         {
                          "name":"persist",
                          "type":"bool",
                          "value":true
-                        }
-                    ],
+                        }],
                  "rotation":0,
                  "type":"variable",
                  "visible":true,
                  "width":0,
                  "x":0,
                  "y":0
+                }, 
+                {
+                 "height":36,
+                 "id":38,
+                 "name":"triggerIncident",
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":89.3333333333333,
+                 "x":832,
+                 "y":696
+                }, 
+                {
+                 "height":59.9999999999999,
+                 "id":42,
+                 "name":"resolveIncident",
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":189.333333333333,
+                 "x":672,
+                 "y":762.666666666667
+                }, 
+                {
+                 "height":212,
+                 "id":43,
+                 "name":"incidentResolved",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":265.333333333333,
+                 "x":432,
+                 "y":642.666666666667
+                }, 
+                {
+                 "height":0,
+                 "id":44,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":938.666666666667,
+                 "y":573.333333333333
+                }, 
+                {
+                 "height":188,
+                 "id":45,
+                 "name":"incidentAlert",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":261.333333333333,
+                 "x":942.666666666667,
+                 "y":633.333333333333
+                }, 
+                {
+                 "height":0,
+                 "id":46,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":720,
+                 "y":513.333333333333
+                }, 
+                {
+                 "height":0,
+                 "id":47,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":920,
+                 "y":1072
+                }, 
+                {
+                 "height":1.33333333333326,
+                 "id":48,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":1.33333333333326,
+                 "x":880,
+                 "y":1224
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1979,7 +2066,7 @@
          "y":0
         }],
  "nextlayerid":138,
- "nextobjectid":38,
+ "nextobjectid":49,
  "orientation":"orthogonal",
  "properties":[
         {

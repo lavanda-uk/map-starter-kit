@@ -60,6 +60,59 @@ WA.onInit()
       // Note: We can't close a new tab programmatically, so we just log the event
     });
 
+    // Trigger incident when entering triggerIncident area
+    WA.room.area.onEnter("triggerIncident").subscribe(async () => {
+      console.log("🚨 [triggerIncident] Entering triggerIncident area - triggering incident");
+      try {
+        // Set the incidentTriggered variable to true
+        await WA.state.saveVariable("incidentTriggered", true);
+        console.log("✅ [triggerIncident] Variable 'incidentTriggered' set to true");
+
+        // Broadcast the incident-triggered event
+        const incidentUrl = "https://app.spike.sh/incidents/argo-12";
+        WA.event.broadcast("incident-triggered", { incidentUrl });
+        console.log("✅ [triggerIncident] Event 'incident-triggered' broadcasted");
+        
+        // Show confirmation to the user
+        WA.ui.openPopup("incidentTriggered", "🚨 Incident triggered!", [
+          {
+            label: "OK",
+            callback: (popup) => {
+              popup.close();
+            },
+          },
+        ]);
+      } catch (error) {
+        console.error("❌ [triggerIncident] Error triggering incident:", error);
+      }
+    });
+
+    // Resolve incident when entering resolveIncident area
+    WA.room.area.onEnter("resolveIncident").subscribe(async () => {
+      console.log("✅ [resolveIncident] Entering resolveIncident area - resolving incident");
+      try {
+        // Set the incidentTriggered variable to false
+        await WA.state.saveVariable("incidentTriggered", false);
+        console.log("✅ [resolveIncident] Variable 'incidentTriggered' set to false");
+
+        // Broadcast the incident-resolved event
+        WA.event.broadcast("incident-resolved", { message: "Incident has been resolved" });
+        console.log("✅ [resolveIncident] Event 'incident-resolved' broadcasted");
+        
+        // Show confirmation to the user
+        WA.ui.openPopup("incidentResolved", "✅ Incident resolved!", [
+          {
+            label: "OK",
+            callback: (popup) => {
+              popup.close();
+            },
+          },
+        ]);
+      } catch (error) {
+        console.error("❌ [resolveIncident] Error resolving incident:", error);
+      }
+    });
+
     // Incident Management System
     setupIncidentManagement();
 
@@ -104,7 +157,7 @@ function setupIncidentManagement() {
     console.log("🚨 [Incident] Incident triggered event received", event.data);
     
     const payload = event.data as { incidentUrl?: string };
-    const incidentUrl = payload?.incidentUrl || "No URL provided";
+    const incidentUrl = payload?.incidentUrl || "https://app.spike.sh/incidents/argo-12";
     
     // Close any existing incident popup
     closeIncidentPopup();
@@ -114,16 +167,19 @@ function setupIncidentManagement() {
     incidentPopup = WA.ui.openPopup("incidentAlert", message, [
       {
         label: "View Incident",
-        callback: () => {
+        callback: (popup) => {
           if (incidentUrl && incidentUrl !== "No URL provided") {
             WA.nav.openTab(incidentUrl);
           }
+          popup.close();
+          incidentPopup = undefined;
         },
       },
       {
         label: "Close",
-        callback: () => {
-          closeIncidentPopup();
+        callback: (popup) => {
+          popup.close();
+          incidentPopup = undefined;
         },
       },
     ]);
@@ -145,8 +201,9 @@ function setupIncidentManagement() {
     incidentPopup = WA.ui.openPopup("incidentResolved", `✅ ${message}`, [
       {
         label: "Close",
-        callback: () => {
-          closeIncidentPopup();
+        callback: (popup) => {
+          popup.close();
+          incidentPopup = undefined;
         },
       },
     ]);

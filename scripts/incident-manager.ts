@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/// <reference types="node" />
+
 import { createRoomApiClient } from "@workadventure/room-api-client";
 
 // Get command line arguments
@@ -33,6 +35,14 @@ if (!roomUrl) {
 }
 
 // Create the client
+console.log("🔌 Connection details:");
+console.log(`   Room API Host: ${roomApiHost}`);
+console.log(`   Room API Port: ${roomApiPort}`);
+console.log(`   Using SSL: ${roomApiPort === 443 || roomApiHost.startsWith("https://")}`);
+console.log(`   API Key: ${apiKey || "NOT SET"}`);
+console.log(`   Room URL: ${roomUrl || "NOT SET"}`);
+console.log("");
+
 const client = createRoomApiClient(apiKey, roomApiHost, roomApiPort);
 
 const VARIABLE_NAME = "incidentTriggered";
@@ -45,8 +55,10 @@ async function triggerIncident(incidentUrl: string) {
     console.log("🚨 Triggering incident alert...");
     console.log(`   Room: ${roomUrl}`);
     console.log(`   Incident URL: ${incidentUrl}`);
+    console.log("");
 
     // Set the incidentTriggered variable to true
+    console.log("📝 Setting variable...");
     await client.saveVariable({
       name: VARIABLE_NAME,
       room: roomUrl,
@@ -63,8 +75,20 @@ async function triggerIncident(incidentUrl: string) {
     console.log("✅ Event 'incident-triggered' broadcasted");
 
     console.log("🎉 Incident alert triggered successfully!");
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error triggering incident:", error);
+    if (error.code === 14 || error.details?.includes("No connection established")) {
+      console.error("");
+      console.error("💡 Connection troubleshooting:");
+      console.error("   1. Verify ROOM_API_HOST and ROOM_API_PORT are correct");
+      console.error("   2. For self-hosted: Use ROOM_API_HOST=room-api.workadventure.localhost ROOM_API_PORT=80");
+      console.error("   3. For production: Verify the Room API service is accessible");
+      console.error("   4. Check your API key is valid and has Room API access");
+      console.error("");
+      console.error("   Current settings:");
+      console.error(`      Host: ${roomApiHost}`);
+      console.error(`      Port: ${roomApiPort}`);
+    }
     process.exit(1);
   }
 }
@@ -94,8 +118,16 @@ async function resolveIncident() {
     console.log("✅ Event 'incident-resolved' broadcasted");
 
     console.log("🎉 Incident resolved successfully!");
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Error resolving incident:", error);
+    if (error.code === 14 || error.details?.includes("No connection established")) {
+      console.error("");
+      console.error("💡 Connection troubleshooting:");
+      console.error("   1. Verify ROOM_API_HOST and ROOM_API_PORT are correct");
+      console.error("   2. For self-hosted: Use ROOM_API_HOST=room-api.workadventure.localhost ROOM_API_PORT=80");
+      console.error("   3. For production: Verify the Room API service is accessible");
+      console.error("   4. Check your API key is valid and has Room API access");
+    }
     process.exit(1);
   }
 }
